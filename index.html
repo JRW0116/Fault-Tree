@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fault Tree Analysis Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Fault Tree Analysis</p>
+        <h1>Model failure paths, quantify risk, and share the result from one static app.</h1>
+        <p class="hero-copy">
+          Build a fault tree in the browser, calculate the top event probability, review minimal cut sets,
+          and export the project as JSON. No backend required.
+        </p>
+      </div>
+      <div class="hero-card">
+        <p class="hero-card-label">Included</p>
+        <ul>
+          <li>AND / OR gate support</li>
+          <li>Probability propagation</li>
+          <li>Minimal cut set generation</li>
+          <li>GitHub Pages friendly hosting</li>
+        </ul>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel panel-left">
+        <div class="panel-heading">
+          <div>
+            <h2>Tree Builder</h2>
+            <p>Create events and gates, then connect them into a fault tree.</p>
+          </div>
+          <button id="loadSampleButton" class="secondary-button" type="button">Load Sample</button>
+        </div>
+
+        <form id="itemForm" class="form-card">
+          <h3>Add Node</h3>
+          <label>
+            Type
+            <select id="itemType" name="itemType">
+              <option value="event">Basic Event</option>
+              <option value="gate">Gate</option>
+            </select>
+          </label>
+
+          <label>
+            Name
+            <input id="itemName" name="itemName" type="text" maxlength="80" placeholder="Cooling pump fails" required>
+          </label>
+
+          <label id="probabilityField">
+            Probability
+            <input id="itemProbability" name="itemProbability" type="number" min="0" max="1" step="0.000001" value="0.01">
+          </label>
+
+          <label id="gateField" class="hidden">
+            Gate Type
+            <select id="itemGateType" name="itemGateType">
+              <option value="OR">OR</option>
+              <option value="AND">AND</option>
+            </select>
+          </label>
+
+          <div class="button-row">
+            <button class="primary-button" type="submit">Add Node</button>
+            <button id="resetFormButton" class="ghost-button" type="button">Clear</button>
+          </div>
+        </form>
+
+        <form id="linkForm" class="form-card">
+          <h3>Connect Nodes</h3>
+          <label>
+            Parent Gate
+            <select id="parentId" name="parentId"></select>
+          </label>
+          <label>
+            Child Node
+            <select id="childId" name="childId"></select>
+          </label>
+          <button class="primary-button" type="submit">Create Link</button>
+        </form>
+
+        <div class="form-card">
+          <div class="section-title-row">
+            <h3>Project</h3>
+            <span class="mono" id="nodeCountLabel">0 nodes</span>
+          </div>
+          <label>
+            Top Event
+            <select id="topEventSelect"></select>
+          </label>
+          <div class="button-row">
+            <button id="exportButton" class="secondary-button" type="button">Export JSON</button>
+            <label class="file-button" for="importInput">Import JSON</label>
+            <input id="importInput" type="file" accept="application/json" hidden>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel-center">
+        <div class="panel-heading">
+          <div>
+            <h2>Model Overview</h2>
+            <p>Review the structure and prune nodes directly from the canvas.</p>
+          </div>
+        </div>
+        <div id="treeCanvas" class="tree-canvas"></div>
+      </section>
+
+      <section class="panel panel-right">
+        <div class="panel-heading">
+          <div>
+            <h2>Analysis</h2>
+            <p>Run the calculation against the selected top event.</p>
+          </div>
+          <button id="analyzeButton" class="primary-button" type="button">Analyze</button>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <p class="stat-label">Top Event Probability</p>
+            <p id="topProbability" class="stat-value">-</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-label">Minimal Cut Sets</p>
+            <p id="cutSetCount" class="stat-value">-</p>
+          </article>
+        </div>
+
+        <div class="form-card">
+          <h3>Result Notes</h3>
+          <div id="analysisNotes" class="results-block empty-state">
+            Choose a top event and run the analysis.
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Cut Sets</h3>
+          <div id="cutSetList" class="results-block empty-state">
+            No cut sets yet.
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="nodeCardTemplate">
+    <article class="node-card">
+      <div class="node-card-top">
+        <div>
+          <p class="node-kind"></p>
+          <h4 class="node-title"></h4>
+        </div>
+        <button class="delete-node-button" type="button">Remove</button>
+      </div>
+      <p class="node-detail"></p>
+      <div class="chip-row"></div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
